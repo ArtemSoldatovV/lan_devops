@@ -1,0 +1,20 @@
+name: Version update pipeline
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+    - release
+
+env:
+  NAME_VEPSION_FILE: version
+jobs:
+  validate-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: strp 1
+        run: 
+           echo "name step 1"
+           echo "name step 1 - rr"
+      - name: strp 2
+        run: echo "name step 2"
