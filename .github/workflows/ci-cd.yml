@@ -67,6 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{steps.get-commit-txt.outputs.TAG_MSG}}
+      version: ${{steps.parse-v.outputs.VERSION}}
     steps:      
 
       # use special lib for parse branch names 
@@ -125,6 +126,13 @@ jobs:
           git commit -m "${{ env.COMMIT_MSG }}"
           git tag -a v${{ env.TAG_MSG }} -m "update tag"
           git push -u origin ${{ env.RELEASE_BRACH }} --tags 
+
+        
+      #get version
+      - name: Get version
+        run: |
+          VERSION=$(cat ./version/version/version)
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
   
   # create changelog file and put data to file 
   changelog-fixme:
