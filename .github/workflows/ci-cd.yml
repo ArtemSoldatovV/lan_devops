@@ -40,7 +40,7 @@ jobs:
  #       run: exit 
 
   print-data-information:
-    runs-on: abuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Second step
         run: echo "Print info"
