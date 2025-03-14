@@ -23,7 +23,8 @@ env:
   REPO_NAME: ${{ github.event.repository.name }}
   PR_NUMBER: ${{ github.event.number }}
   URL_REPO: ${{ github.server_url }}/${{ github.repository }}
-  # DOCKER_REPO: ${{ secrets.DOCKER_HUB_LOGIN }}/${{env.REPO_NAME}}
+  CONTAINER_NAME: land_devops
+  CHANGELOG_FILE: changelog.md
 
 #JOBS list for update versions 
 jobs:
@@ -56,18 +57,25 @@ jobs:
   security: 
     name: (SEC)
     needs: pre-merge-check
-    uses: makarmarkov/land_devops/.github/workflows/sec.yml@release # attention @branch-name is recomnneded
+    uses: ArtemSoldatovV/land_devops/.github/workflows/sec.yml@release # attention @branch-name is recomnneded
+
+    # create changelog file and put data to file 
+  tests:
+    name: (TST)
+    needs: security
+    uses: ArtemSoldatovV/land_devops/.github/workflows/test.yml@release
+    with: 
+      version: alpha
 
   # start update version files       
   update-version:
     name: (VER) Version UP
-    needs: security
+    needs: tests
     permissions:
       contents: write
     runs-on: ubuntu-latest
     outputs:
       tag: ${{steps.get-commit-txt.outputs.TAG_MSG}}
-      version: ${{steps.parse-v.outputs.VERSION}}
     steps:      
 
       # use special lib for parse branch names 
@@ -126,74 +134,92 @@ jobs:
           git commit -m "${{ env.COMMIT_MSG }}"
           git tag -a v${{ env.TAG_MSG }} -m "update tag"
           git push -u origin ${{ env.RELEASE_BRACH }} --tags 
-
-        
-      #get version
-      - name: Get version
-        run: |
-          VERSION=$(cat ./version/version/version)
-          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
   
   # create changelog file and put data to file 
-  changelog-fixme:
+  changelog:
     name: (VER) Chagelog UP
     permissions:
       contents: write
+      pull-requests: write
+      repository-projects: write
+      id-token: write
     runs-on: ubuntu-latest
     needs: update-version
-    steps:
-      - name: Prepare enviroments
-        run: |
-          echo "update chnagelog file"
+    steps:  
       # checkout on branch 
       - name: Сheckout on [${{env.RELEASE_BRACH}}]
         uses: actions/checkout@v2
 
+      - name: update release
+        run: |
+          git pull
+      
+      - name: Update changelog.md
+        run: | 
+          echo "---" >> ${{env.CHANGELOG_FILE}} 
+          echo "#### [${{needs.update-version.outputs.tag}}] - $(date +"%Y.%m.%d")    ${{ github.event.pull_request.head.ref }}" >> ${{env.CHANGELOG_FILE}} 
+      
+      - name: Setup git config
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+      
+       # add and push to remote repository 
+      - name: Commit
+        run: |
+          git add .
+          git commit -m "[${{needs.update-version.outputs.tag}}] ${{env.CHAGELOG_FILE}}"
+          git push -u origin ${{ env.RELEASE_BRACH }} --tags 
+
+      # upload changelog to artifact
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{env.CHANGELOG_FILE}}
+          path: ${{env.CHANGELOG_FILE}}
+
+      # append comment to PR
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '${{env.CHANGELOG_FILE}} был обновлен. Новая версия доступна в корне репозитория.'
+            })
+      # add label to PR 
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['changelog-${{needs.update-version.outputs.tag}}']
+            })
+
+
   # create changelog file and put data to file 
-  build-fixme:
-    name: (CI) Build
+  build:
+    name: (BUILD)
+    needs: changelog
+    uses: ArtemSoldatovV/land_devops/.github/workflows/build.yml@release
     permissions:
       contents: write
-    runs-on: ubuntu-latest
-    needs: changelog-fixme
-    steps:
-      - name: Prepare enviroments
-        run: |
-          echo "start build application"
-      # checkout on branch 
-      - name: Сheckout on [${{env.RELEASE_BRACH}}]
-        uses: actions/checkout@v2
-
-  # create changelog file and put data to file 
-  tests-fixme:
-    name: (TST)
-    needs: build-fixme
-    uses: makarmarkov/land_devops/.github/workflows/test.yml@release
-    with: 
-      version: alpha
-  
-  # telegram notify about all tests
-  tests-notify:
-    name: (TG) Notify test
-    needs: tests-fixme
-    runs-on: ubuntu-latest
-    steps:
-      - name: send telegram message on push
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: |
-            Тестирование пройдено
-
+      pull-requests: write
+      repository-projects: write
+      id-token: write
 
   # build docker image and push to registry
   docker-push:
     name: (CI) Docker push
     permissions:
       contents: write
+      pull-requests: write
+      repository-projects: write
+      id-token: write
     runs-on: ubuntu-latest
-    needs: [tests-notify,update-version]
+    needs: [build,update-version]
     env: 
       tag: ${{needs.update-version.outputs.tag}}
     steps:
@@ -218,6 +244,28 @@ jobs:
           file: ./dockerfile
           push: true
           tags: ${{ secrets.DOCKER_HUB_LOGIN }}/${{env.REPO_NAME}}:v${{env.tag}}
+
+      # update info about docker Readme file and description
+      - name: Docker Hub Description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKER_HUB_LOGIN }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          repository: ${{ secrets.DOCKER_HUB_LOGIN }}/${{env.CONTAINER_NAME}}
+          short-description: ${{ github.event.repository.description }}
+          readme-filepath: ./README.md
+          enable-url-completion: true
+      
+      # add label to PR 
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['dockerhub','${{env.tag}}']
+            })
   
   # Final notify about all release pack
   final-notify:
@@ -254,6 +302,11 @@ jobs:
       - name: Checkout on release
         uses: actions/checkout@v2
       
+      # download changelog file
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{env.CHANGELOG_FILE}}
+      
       # genearate message and notify 
       - name: send telegram message on push
         uses: appleboy/telegram-action@master
@@ -261,8 +314,7 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: html
-          # document: ./.github/workflows/img.png
-          photo: ./.github/workflows/img.png
+          document: ${{env.CHANGELOG_FILE}}
           message: |           
             Новый выпуск изменений
             <b>Проект</b> : <code>${{ env.REPO_NAME }}</code>
@@ -278,12 +330,20 @@ jobs:
             <b>Владелец</b>: <a href="https://hub.docker.com/repositories/${{ secrets.DOCKER_HUB_LOGIN }}">${{ secrets.DOCKER_HUB_LOGIN }}</a>
             <b>Название</b>: <a href="https://hub.docker.com/repository/docker/${{ secrets.DOCKER_HUB_LOGIN }}/${{ env.REPO_NAME }}/general">${{ env.REPO_NAME }}</a>
             <b>Тег</b>: <a href="https://hub.docker.com/repository/docker/${{ secrets.DOCKER_HUB_LOGIN }}/${{ env.REPO_NAME }}/tags/v">${{env.tag}}</a>
-            <b>Полное имя</b>:  <a href="https://hub.docker.com/repository/docker/${{ secrets.DOCKER_HUB_LOGIN }}/${{ env.REPO_NAME }}/tags">v${{ secrets.DOCKER_HUB_LOGIN }}/${{ env.REPO_NAME }}:v${{env.tag}}</a>
+            <b>Полное имя</b>:  <a href="https://hub.docker.com/repository/docker/${{ secrets.DOCKER_HUB_LOGIN }}/${{ env.REPO_NAME }}/tags">${{ secrets.DOCKER_HUB_LOGIN }}/${{ env.REPO_NAME }}:v${{env.tag}}</a>
   
   #calling another workflows
-  call-deploy:
-    name: Calling deploy workflow
+  deploy:
+    name: Deploy
     needs: [final-notify,update-version]
-    uses: makarmarkov/land_devops/.github/workflows/deploy.yml@release
+    uses: ArtemSoldatovV/land_devops/.github/workflows/deploy.yml@release
     with: 
-      version: tete
+      version: v${{needs.update-version.outputs.tag}}
+      container_name: land_devops
+    secrets: 
+      DOCKER_USERNAME: ${{ secrets.DOCKER_HUB_LOGIN }}
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+      id-token: write
