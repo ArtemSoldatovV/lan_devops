@@ -200,15 +200,15 @@ jobs:
 
 
   # create changelog file and put data to file 
-  build:
-    name: (BUILD)
-    needs: changelog
-    uses: ArtemSoldatovV/land_devops/.github/workflows/build.yml@release
-    permissions:
-      contents: write
-      pull-requests: write
-      repository-projects: write
-      id-token: write
+  # build:
+  #   name: (BUILD)
+  #   needs: changelog
+  #   uses: ArtemSoldatovV/land_devops/.github/workflows/build.yml@release
+  #   permissions:
+  #     contents: write
+  #     pull-requests: write
+  #     repository-projects: write
+  #     id-token: write
 
   # build docker image and push to registry
   docker-push:
