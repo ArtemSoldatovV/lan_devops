@@ -63,7 +63,7 @@ jobs:
   tests:
     name: (TST)
     needs: security
-    uses: ArtemSoldatovV/land_devops/.github/workflows/test.yml@release
+    uses: ArtemSoldatovV/land_devops/.github/workflows/test.yml
     with: 
       version: alpha
 
