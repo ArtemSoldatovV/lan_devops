@@ -57,13 +57,13 @@ jobs:
   security: 
     name: (SEC)
     needs: pre-merge-check
-    uses: ArtemSoldatovV/land_devops/.github/workflows/sec.yml@release # attention @branch-name is recomnneded
+    # uses: ArtemSoldatovV/land_devops/.github/workflows/sec.yml@release # attention @branch-name is recomnneded
 
     # create changelog file and put data to file 
   tests:
     name: (TST)
     needs: security
-    uses: ArtemSoldatovV/land_devops/.github/workflows/test.yml
+    uses: ArtemSoldatovV/land_devops/.github/workflows/test.yml@release
     with: 
       version: alpha
 
