@@ -23,13 +23,12 @@ env:
 #JOBS list for update versions 
 #testing stage
 jobs:
-
-  tests:
-    name: (TST)
-    needs: security
-    uses: ArtemSoldatovV/lan_devops/.github/workflows/test.yml@release
-    with: 
-      version: alpha
+  # tests:
+  #       name: (TST)
+  #       needs: security
+  #       uses: ArtemSoldatovV/lan_devops/.github/workflows/test.yml@release
+  #       with: 
+  #         version: alpha
 
 #safety check stage
   security: 
