@@ -1,12 +1,12 @@
 # Название вашего пайплайна
 name: Automate Version from Soldatov Artem
 
-on:
-  workflow_dispatch:
-  pull_request:
-    types: [closed]
-    branches:
-      - release
+# on:
+#   workflow_dispatch:
+#   pull_request:
+#     types: [closed]
+#     branches:
+#       - release
         
 env:
   NAME_VERSION_FILE: ${{ github.workspace }}/version
