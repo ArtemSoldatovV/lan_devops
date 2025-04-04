@@ -44,121 +44,124 @@ jobs:
     uses: ArtemSoldatovV/lan_devops/.github/workflows/test.yml@release
     with: 
       version: alpha
-
   #@point 2@
   label_test:
-    - name: Checkout code
-      uses: actions/checkout@v2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Run security checks
-      run: |
-         echo "Running security checks..."
-         echo "SEC_CHECKS_PASSED=true" >> $GITHUB_ENV
+      - name: Run security checks
+        run: |
+          echo "Running security checks..."
+          echo "SEC_CHECKS_PASSED=true" >> $GITHUB_ENV
 
-    - name: Add label if security checks passed
-      if: env.SEC_CHECKS_PASSED == 'true'
-      uses: ArtemSoldatovV/action-add-labels@v1
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        labels: sec-passed
+      - name: Add label if security checks passed
+        if: env.SEC_CHECKS_PASSED == 'true'
+        uses: ArtemSoldatovV/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: sec-passed
     #@point 2
     #@point 3
-  steps:
-    - name: Checkout code
-      uses: ArtemSoldatovV/checkout@v2
+  point:
+    steps:
+      - name: Checkout code i2
+        uses: ArtemSoldatovV/checkout@v2
 
-    - name: Run security checks
-      run: |
-        echo "Running security checks..."
-        echo "SEC_CHECKS_PASSED=true" >> $GITHUB_ENV
+      - name: Run security checks
+        run: |
+          echo "Running security checks..."
+          echo "SEC_CHECKS_PASSED=true" >> $GITHUB_ENV
 
-    - name: Install ClamAV
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y clamav clamav-daemon
-        sudo freshclam
+      - name: Install ClamAV
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clamav clamav-daemon
+          sudo freshclam
 
-    - name: Run ClamAV scan
-      run: |
-        clamscan -r --bell -i . || true
+      - name: Run ClamAV scan
+        run: |
+          clamscan -r --bell -i . || true
 
-    - name: Add label if security checks passed
-      if: env.SEC_CHECKS_PASSED == 'true'
-      uses: ArtemSoldatovV/action-add-labels@v1
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        labels: sec-passed
+      - name: Add label if security checks passed
+        if: env.SEC_CHECKS_PASSED == 'true'
+        uses: ArtemSoldatovV/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: sec-passed
     #@point 3
     #@point 4
   steps_point_4:
-    - name: Checkout code
-      uses: actions/checkout@v2
+    steps:
+      - name: Checkout code i3
+        uses: actions/checkout@v2
 
-    - name: Install ClamAV
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y clamav clamav-daemon
-        sudo freshclam
+      - name: Install ClamAV
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clamav clamav-daemon
+          sudo freshclam
 
-    - name: Run ClamAV scan
-      id: clamav_scan
-      run: |
-        clamscan -r --bell -i . || true  # Сканирует текущую директорию и игнорирует ошибки
-        if [ $? -eq 0 ]; then
-          echo "SEC_CHECKS_PASSED=true" >> $GITHUB_ENV
-        else
-          echo "SEC_CHECKS_PASSED=false" >> $GITHUB_ENV
-        fi
+      - name: Run ClamAV scan
+        id: clamav_scan
+        run: |
+          clamscan -r --bell -i . || true  # Сканирует текущую директорию и игнорирует ошибки
+          if [ $? -eq 0 ]; then
+            echo "SEC_CHECKS_PASSED=true" >> $GITHUB_ENV
+          else
+            echo "SEC_CHECKS_PASSED=false" >> $GITHUB_ENV
+          fi
 
-    - name: Add label if security checks passed
-      if: env.SEC_CHECKS_PASSED == 'true'
-      uses: ArtemSoldatovV/action-add-labels@v1
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        labels: sec-passed
+      - name: Add label if security checks passed
+        if: env.SEC_CHECKS_PASSED == 'true'
+        uses: ArtemSoldatovV/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: sec-passed
     #@point 4
 
     #Version update
     #Formation changelog.md
   steps_formation:
-    - name: Checkout code
-      uses: actions/checkout@v2
+    steps:
+      - name: Checkout code i4
+        uses: actions/checkout@v2
 
-    - name: Set up Git
-      run: |
-        git config --local user.name "github-actions"
-        git config --local user.email "github-actions@github.com"
+      - name: Set up Git
+        run: |
+          git config --local user.name "github-actions"
+          git config --local user.email "github-actions@github.com"
 
-    - name: Update changelog.md
-      id: update_changelog
-      run: |
-        VERSION="v$(date +'%Y%m%d%H%M%S')"  # Пример версии на основе времени
-        BRANCH_NAME="${GITHUB_REF##*/}"  # Получаем имя ветки
-        
-        echo "## $VERSION - $BRANCH_NAME" >> changelog.md
-        echo "" >> changelog.md
-        echo "### Changes:" >> changelog.md
-        echo "- Added new features from branch $BRANCH_NAME" >> changelog.md
-        echo "" >> changelog.md
+      - name: Update changelog.md
+        id: update_changelog
+        run: |
+          VERSION="v$(date +'%Y%m%d%H%M%S')"  # Пример версии на основе времени
+          BRANCH_NAME="${GITHUB_REF##*/}"  # Получаем имя ветки
+          
+          echo "## $VERSION - $BRANCH_NAME" >> changelog.md
+          echo "" >> changelog.md
+          echo "### Changes:" >> changelog.md
+          echo "- Added new features from branch $BRANCH_NAME" >> changelog.md
+          echo "" >> changelog.md
 
-    - name: Commit changes to changelog.md
-      run: |
-        git add changelog.md
-        git commit -m "Update changelog for version $VERSION"
-        git push
+      - name: Commit changes to changelog.md
+        run: |
+          git add changelog.md
+          git commit -m "Update changelog for version $VERSION"
+          git push
 
-    - name: Add label to PR
-      if: github.event_name == 'pull_request'
-      uses: actions-ecosystem/action-add-labels@v1
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        labels: changelog
+      - name: Add label to PR
+        if: github.event_name == 'pull_request'
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: changelog
 
-    - name: Create artifact for changelog
-      uses: actions/upload-artifact@v2
-      with:
-        name: changelog-artifact
-        path: changelog.md
+      - name: Create artifact for changelog
+        uses: actions/upload-artifact@v2
+        with:
+          name: changelog-artifact
+          path: changelog.md
     #Publishing in the docker hub
     #Notification in a telegram
   final-notify:
