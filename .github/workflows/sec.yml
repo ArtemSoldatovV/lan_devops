@@ -1,6 +1,6 @@
 name: Security scanning
-# on:
-#   workflow_call:
+on:
+  workflow_call:
 
 #антивирус
 jobs: 
