@@ -1,19 +1,19 @@
 name: Deploy appllication to enviroments
-# on:
-#   workflow_call:
-#     inputs:  
-#       version:
-#         type: string
-#         required: true
-#         description: "Version of application. Tag from gitlab"
-#       container_name:
-#         type: string
-#         required: true
-#         description: "Name of container."
-#     secrets:
-#       DOCKER_USERNAME:
-#         required: true
-#         description: ''
+on:
+  workflow_call:
+    inputs:  
+      version:
+        type: string
+        required: true
+        description: "Version of application. Tag from gitlab"
+      container_name:
+        type: string
+        required: true
+        description: "Name of container."
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+        description: ''
   
 # declare version of application 
 # point of interest
