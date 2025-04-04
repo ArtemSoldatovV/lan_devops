@@ -46,20 +46,20 @@ jobs:
 
   #@point 2@
   label_test:
-    name: Checkout code
-    uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-    name: Run security checks
-    run: |
-       echo "Running security checks..."
-       echo "SEC_CHECKS_PASSED=true" >> $GITHUB_ENV
+    - name: Run security checks
+      run: |
+         echo "Running security checks..."
+         echo "SEC_CHECKS_PASSED=true" >> $GITHUB_ENV
 
-    name: Add label if security checks passed
-    if: env.SEC_CHECKS_PASSED == 'true'
-    uses: ArtemSoldatovV/action-add-labels@v1
-    with:
-      github_token: ${{ secrets.GITHUB_TOKEN }}
-      labels: sec-passed
+    - name: Add label if security checks passed
+      if: env.SEC_CHECKS_PASSED == 'true'
+      uses: ArtemSoldatovV/action-add-labels@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        labels: sec-passed
     #@point 2
     #@point 3
   steps:

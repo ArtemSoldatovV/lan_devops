@@ -6,9 +6,9 @@ on:
     # # If you prefer to have flow 1 define outputs, check the docs for an example.
     inputs:
       version:
-      type: string
-      required: true
-      description: "contains version of application"
+        type: string
+        required: true
+      # description: "contains version of application"
 jobs:
   unit:
     name: Unit-test
