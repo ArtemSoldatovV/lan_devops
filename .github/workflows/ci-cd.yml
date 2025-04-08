@@ -257,6 +257,17 @@ jobs:
           git commit -m "${{ env.COMMIT_MSG }}"
           git tag -a v${{ env.TAG_MSG }} -m "update tag"
           git push -u origin ${{ env.RELEASE_BRACH }} --tags 
+  # create changelog file and put data to file 
+
+  build:
+    name: (BUILD)
+    needs: changelog
+    uses: ArtemSoldatovV/lan_devops/.github/workflows/build.yml@release
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+      id-token: write
   
   docker-push:
     name: (CI) Docker push
@@ -322,13 +333,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # use special lib for parse branch names 
-	  # используйте специальную библиотеку lib для разбора имен ветвей
+      # используйте специальную библиотеку lib для разбора имен ветвей
       - name: Get branch names
         id: branch-names
         uses: tj-actions/branch-names@v8
 
       # use for get time value
-	  # используйте для получения значения времени
+      # используйте для получения значения времени
       - name: Get current time
         uses: josStorer/get-current-time@v2
         id: current-time
@@ -337,7 +348,7 @@ jobs:
           utcOffset: "+08:00"
       
       #print info about time
-	  #распечатайте информацию о времени
+      #распечатайте информацию о времени
       - name: Use current time
         env:
           TIME: "${{ steps.current-time.outputs.time }}"
@@ -348,18 +359,18 @@ jobs:
         run: echo $TIME $R_TIME $F_TIME $YEAR $DAY
 
       # checkout on branch 
-	  # оформление заказа в филиале
+      # оформление заказа в филиале
       - name: Checkout on release
         uses: actions/checkout@v2
       
       # download changelog file
-	  # загрузить файл журнала изменений
+      # загрузить файл журнала изменений
       - uses: actions/download-artifact@v4
         with:
           name: ${{env.CHANGELOG_FILE}}
       
       # genearate message and notify 
-	  # сгенерировать сообщение и уведомить
+      # сгенерировать сообщение и уведомить
       - name: send telegram message on push
         uses: appleboy/telegram-action@master
         with:
