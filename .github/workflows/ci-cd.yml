@@ -46,6 +46,7 @@ jobs:
       version: alpha
   #@point 2@
   label_test:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -64,6 +65,7 @@ jobs:
     #@point 2
     #@point 3
   point:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code i2
         uses: ArtemSoldatovV/checkout@v2
@@ -92,6 +94,7 @@ jobs:
     #@point 3
     #@point 4
   steps_point_4:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code i3
         uses: actions/checkout@v2
@@ -123,6 +126,7 @@ jobs:
     #Version update
     #Formation changelog.md
   steps_formation:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code i4
         uses: actions/checkout@v2
