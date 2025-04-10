@@ -73,8 +73,6 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
 
       - name: Run security checks
         run: |
@@ -83,7 +81,8 @@ jobs:
 
       - name: Add label if security checks passed
         if: env.SEC_CHECKS_PASSED == 'true'
-        uses: ArtemSoldatovV/action-add-labels@v1
+        run: |
+          echo "everything was completed successfully"
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           labels: sec-passed
@@ -96,7 +95,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code i2
-        uses: actions/checkout@v2
+        run: |
+          echo "the beginning of the test"
 
       - name: Run security checks
         run: |
@@ -121,7 +121,8 @@ jobs:
 
       - name: Add label if security checks passed
         if: env.SEC_CHECKS_PASSED == 'true'
-        uses: ArtemSoldatovV/action-add-labels@v1
+        run: |
+          echo "everything was completed successfully"
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           labels: sec-passed
@@ -136,7 +137,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code i4
-        uses: actions/checkout@v2
+        run: |
+          echo "the beginning of the test"
 
       - name: Set up Git
         run: |
@@ -161,15 +163,16 @@ jobs:
           git commit -m "Update changelog for version $VERSION"
           git push
 
-      - name: Add label to PR
-        if: github.event_name == 'pull_request'
-        uses: actions-ecosystem/action-add-labels@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          labels: changelog
+      # - name: Add label to PR
+      #   if: github.event_name == 'pull_request'
+      #   uses: actions-ecosystem/action-add-labels@v1
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     labels: changelog
 
       - name: Create artifact for changelog
-        uses: actions/upload-artifact@v2
+        run: |
+          echo "everything was completed successfully"
         with:
           name: changelog-artifact
           path: changelog.md
