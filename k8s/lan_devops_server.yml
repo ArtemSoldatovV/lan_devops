@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lan-devops-service-014
+spec:
+  selector:
+    app: lan-devops-014
+    version: "0.1.4"
+  ports:
+    - protocol: TCP
+      targetPort: 80 Евнутренний порт в контейнере
+      port: 8082 # Внешний для всех подключаемых клиентов
+
+  type: LoadBalancer
