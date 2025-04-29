@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lan-devops
+  labels:
+    namespace: land-devops-namespace
+    app: lan-devops
+    version: "0.1.4"
+spec:
+  replicas: 10
+  strategy:
+
+
+
+
+
+
+
+
+
+
+
+  selector:
+    matchLabels:
+      app: lan-devops-014
+  template:
+    metadata:
+      labels:
+        app: lan-devops-014
+        version: "0.1.4"
+  spec:
+    containers:
+    - name: lan-devops-container-014
+      image: makarmarkov/lan devops:v0.1.4
+      #прописываются порты для контейнера
+      ports: 
+      - containerPort: 80
+      # выдача ресурсок под POD
+      resources:
+        limits:
+          memory: "300Mi"
+          сри: "20m"
+        requests:
+          memory: "100Mi"
+          сри: "10m"
